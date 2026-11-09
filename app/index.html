@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fa">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer>
+      const requiredProjectFields = ["name", "owner", "status", "recentActivity", "priority"];
+
+      function isProject(value) {
+        return value !== null
+          && typeof value === "object"
+          && requiredProjectFields.every((field) => typeof value[field] === "string")
+          && (value.summary === undefined || typeof value.summary === "string");
+      }
+
+      function createTextElement(tagName, className, text) {
+        const element = document.createElement(tagName);
+        if (className) {
+          element.className = className;
+        }
+        element.textContent = text;
+        return element;
+      }
+
+      function modifierFor(value, knownValues) {
+        const modifier = value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        return knownValues.includes(modifier) ? modifier : "unknown";
+      }
+
+      function createProjectCard(project) {
+        const card = document.createElement("article");
+        card.className = "project-card";
+
+        const title = createTextElement("h2", "project-card__title", project.name);
+        card.append(title);
+
+        const badges = document.createElement("div");
+        badges.className = "project-card__badges";
+
+        const status = createTextElement(
+          "span",
+          `status-badge status-badge--${modifierFor(project.status, ["on-track", "at-risk", "in-progress", "planning", "complete", "blocked"])}`,
+          `Status: ${project.status}`
+        );
+        const priority = createTextElement(
+          "span",
+          `priority priority--${modifierFor(project.priority, ["critical", "high", "medium", "low"])}`,
+          `Priority: ${project.priority}`
+        );
+        badges.append(status, priority);
+        card.append(badges);
+
+        const owner = document.createElement("p");
+        owner.className = "project-card__owner";
+        const ownerLabel = createTextElement("span", "field-label", "Owner");
+        const ownerName = createTextElement("span", "", project.owner);
+        owner.append(ownerLabel, ownerName);
+        card.append(owner);
+
+        const activity = document.createElement("p");
+        activity.className = "project-card__activity";
+        const activityLabel = createTextElement("span", "field-label", "Recent activity");
+        const activityText = createTextElement("span", "", project.recentActivity);
+        activity.append(activityLabel, activityText);
+        card.append(activity);
+
+        if (project.summary !== undefined) {
+          const summary = createTextElement("p", "project-card__summary", project.summary);
+          card.append(summary);
+        }
+
+        return card;
+      }
+
+      function showState(container, kind, message) {
+        container.replaceChildren();
+        const state = createTextElement("p", `dashboard-state dashboard-state--${kind}`, message);
+        state.setAttribute("role", kind === "loading" ? "status" : "alert");
+        container.append(state);
+        container.setAttribute("aria-busy", kind === "loading" ? "true" : "false");
+      }
+
+      async function loadProjects() {
+        const grid = document.querySelector("#project-grid");
+        const count = document.querySelector("#project-count");
+        showState(grid, "loading", "Loading projects…");
+        count.textContent = "Loading project count…";
+
+        let response;
+        try {
+          response = await fetch("project-data.json");
+        } catch {
+          showState(grid, "error", "Projects could not be loaded. Check your connection and try again.");
+          count.textContent = "Project count unavailable";
+          return;
+        }
+
+        if (!response.ok) {
+          showState(grid, "error", `Projects could not be loaded (HTTP ${response.status}).`);
+          count.textContent = "Project count unavailable";
+          return;
+        }
+
+        let data;
+        try {
+          data = await response.json();
+        } catch {
+          showState(grid, "malformed", "The project data is not valid JSON.");
+          count.textContent = "Project count unavailable";
+          return;
+        }
+
+        if (!data || typeof data !== "object" || !Array.isArray(data.projects)
+          || !data.projects.every(isProject)) {
+          showState(grid, "malformed", "The project data has an unexpected format. Each project must include a name, owner, status, recent activity, and priority.");
+          count.textContent = "Project count unavailable";
+          return;
+        }
+
+        if (data.projects.length === 0) {
+          showState(grid, "empty", "There are no projects to show yet.");
+          count.textContent = "0 projects";
+          return;
+        }
+
+        count.textContent = `${data.projects.length} ${data.projects.length === 1 ? "project" : "projects"}`;
+        grid.replaceChildren(...data.projects.map(createProjectCard));
+        grid.setAttribute("aria-busy", "false");
+      }
+
+      document.addEventListener("DOMContentLoaded", loadProjects);
+    </script>
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="dashboard-header">
+        <div>
+          <p class="eyebrow">TEAM OVERVIEW</p>
+          <h1>Project Pulse</h1>
+          <p class="dashboard-header__description">A clear view of what’s moving, who’s leading, and where attention is needed.</p>
+        </div>
+        <p id="project-count" class="project-count" aria-live="polite">Loading project count…</p>
+      </header>
+
+      <section aria-labelledby="projects-heading">
+        <div class="section-heading">
+          <h2 id="projects-heading">Your projects</h2>
+          <p>Current status and latest updates</p>
+        </div>
+        <div id="project-grid" class="project-grid" aria-live="polite" aria-busy="true">
+          <p class="dashboard-state dashboard-state--loading" role="status">Loading projects…</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "projects": [
+    {
+      "name": "Atlas Website Refresh",
+      "owner": "Maya Chen",
+      "status": "On track",
+      "recentActivity": "Homepage prototype approved; content review begins Thursday.",
+      "priority": "High",
+      "summary": "Modernize the public website and improve the path from discovery to signup."
+    },
+    {
+      "name": "Northstar Analytics",
+      "owner": "Jordan Lee",
+      "status": "At risk",
+      "recentActivity": "Data migration is two days behind while the team resolves schema gaps.",
+      "priority": "Critical",
+      "summary": "Unify product usage reporting in a dependable, self-serve analytics workspace."
+    },
+    {
+      "name": "Mobile Checkout",
+      "owner": "Sam Rivera",
+      "status": "In progress",
+      "recentActivity": "Payment flow usability testing completed with 8 participants.",
+      "priority": "Medium",
+      "summary": "Make the mobile purchase experience faster and easier to complete."
+    },
+    {
+      "name": "Developer Portal",
+      "owner": "Avery Patel",
+      "status": "Planning",
+      "recentActivity": "Stakeholder workshop scheduled for next Monday.",
+      "priority": "Low",
+      "summary": "Bring API guides, examples, and release notes together in one developer hub."
+    },
+    {
+      "name": "Customer Help Center",
+      "owner": "Taylor Morgan",
+      "status": "Complete",
+      "recentActivity": "New help center launched; support team onboarding is underway.",
+      "priority": "Medium",
+      "summary": "Refresh support content so customers can find reliable answers on their own."
+    },
+    {
+      "name": "Identity Improvements",
+      "owner": "Riley Brooks",
+      "status": "Blocked",
+      "recentActivity": "Waiting on the security review before implementation can continue.",
+      "priority": "High",
+      "summary": "Simplify account access while strengthening sign-in security."
+    }
+  ]
+}
